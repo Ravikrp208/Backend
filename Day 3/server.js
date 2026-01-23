@@ -15,6 +15,10 @@ app.post ("/note",(req,res) =>{
     res.send("note created")
 })
 
+app.delete("/note/:index", (req,res)=>{
+  console.log(req.params.index)
+})
+
 
 
 
