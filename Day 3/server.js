@@ -23,7 +23,7 @@ app.delete("/note/:index", (req,res)=>{
 
 
 app.get("/note",(req,res)=>{
-    res.send(notes)
+    res.send(note)
 })
 
 
