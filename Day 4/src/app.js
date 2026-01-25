@@ -1,61 +1,43 @@
-const express = require("express");
-const app = express();
+const express = require ("express")
 
-app.use(express.json());
+const app=express ()
 
-const notes = [];
+//middleware to read json body
+app.use(express.json())
+const notes =[]
 
-// GET all notes
-app.get("/notes", (req, res) => {
-  res.json(notes);
-});
+//home route
+app.get("/ " ,(req, res) =>{
+  res.send("hello wolrd")
+})
 
-// POST create note
-app.post("/notes", (req, res) => {
-  notes.push(req.body);
-  res.status(201).json({
-    message: "Note created",
-    data: req.body,
-  });
-});
 
-// PUT update whole note by index
-app.put("/notes/:index", (req, res) => {
-  const index = req.params.index;
+//create notes
+app.post ("/notes",(req,res)=>{
+  console.log(req.body)
+  notes.push(req.body)
+  console.log(notes)
+  res.send("notes is created")
+})
 
-  if (!notes[index]) {
-    return res.status(404).json({ message: "Note not found" });
-  }
+/* */
 
-  notes[index] = req.body; // replace full object
-  res.json({ message: "Note updated", data: notes[index] });
-});
+app.get("/notes", (req,res)=>{
+  res.send(notes)
+})
 
-// PATCH update part of note
-app.patch("/notes/:index", (req, res) => {
-  const index = req.params.index;
 
-  if (!notes[index]) {
-    return res.status(404).json({ message: "Note not found" });
-  }
+app.delete("/notes/:index",(req,res)=>{
+     console.log(req.params.index)
+     console.log("note deleted successfully")
+})
+/* PATCH /note/:index  */
+/* req.body ={description :- "sample modified description "} */
+app.patch("/note/:index",(req, res)=>{
+  notes[req.params.index].description =req.body.description
+  notes[req.params.index].title =req.body.title
+  req.send("Note updated successfully")
+})
 
-  notes[index] = { ...notes[index], ...req.body };
-  res.json({ message: "Note partially updated", data: notes[index] });
-});
 
-// DELETE note by index
-app.delete("/notes/:index", (req, res) => {
-  const index = req.params.index;
-
-  if (!notes[index]) {
-    return res.status(404).json({ message: "Note not found" });
-  }
-
-  notes.splice(index, 1);
-  res.json({ message: "Note deleted" });
-});
-
-// start server
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
-});
+module.exports= app
