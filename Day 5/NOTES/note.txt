@@ -1,0 +1,4 @@
+CLUSTER => storage + processor
+database
+
+clou
