@@ -53,6 +53,4 @@ app.patch("/notes/:index",(req,res)=>{
 })
 
 
-
-
 module.exports =app;

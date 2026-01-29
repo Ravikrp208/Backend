@@ -1,4 +1,6 @@
 CLUSTER => storage + processor
 database
 
-clou
+clould => mongodb Atlas
+schema
+noteschema
