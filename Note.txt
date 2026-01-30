@@ -4,3 +4,14 @@ database
 clould => mongodb Atlas
 schema
 noteschema
+
+
+Day-7
+
+databse user 0r pass:-
+ravikumar
+qaiKoKvTteLnvygE
+
+mongodb+srv://ravikumar:<db_password>@cluster0.zegzsbe.mongodb.net/
+// addd password
+mongodb+srv://ravikumar:qaiKoKvTteLnvygE@cluster0.zegzsbe.mongodb.net/
