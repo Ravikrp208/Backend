@@ -42,26 +42,20 @@ app.get("/notes", async (req, res) => {
   });
 });
 
-app.delete("/api/notes/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
+/**
+ * DELETE /API /NOTES:ID
+ */
 
-    const deletedNote = await noteModel.findByIdAndDelete(id);
+app.delete("/api/notes/:id" , async (req , res)=> {
+  const id =req.params.id 
+  await noteModel .findByIdAndDelete(id)
+  
+  res.status(200).json({
+    message:"Note deleted successfully."
+  })
 
-    if (!deletedNote) {
-      return res.status(404).json({ message: "Note not found" });
-    }
+})
 
-    res.status(200).json({
-      message: "Note deleted successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error deleting note",
-      error: error.message,
-    });
-  }
-});
 app.patch("/api/notes/:id", async (req, res) => {
   try {
     const { id } = req.params;
