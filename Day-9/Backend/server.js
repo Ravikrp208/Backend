@@ -11,6 +11,6 @@ const app = require("./scr/app");
 
  connectTodb ()
 
-app.listen(3000, () => {
-  console.log("server is runnig on port 3000");
+app.listen(8000, () => {
+  console.log("server is runnig on port 8000");
 });

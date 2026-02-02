@@ -6,6 +6,7 @@
 
 const express = require("express");
 const noteModel = require("./Models/notes.model");
+const path = require("path")
 
 const app = express();
 app.use(express.json());
@@ -79,7 +80,17 @@ app.patch("/api/notes/:id", async (req, res) => {
   }
 });
 
+console.log(__dirname)
+  
+/**
+ * wild card this is a invaild api error .
+ */
 
+
+// app.use('*', (req,res)=>{
+//   res.send(" this is  wild card ")
+//   res.sendFile("/public/index.html")
+// })
 
 
 module.exports = app;
