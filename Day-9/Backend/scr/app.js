@@ -7,6 +7,7 @@
 const express = require("express");
 const noteModel = require("./Models/notes.model");
 const path = require("path")
+const cors =require("cors")
 
 const app = express();
 app.use(express.json());
@@ -16,7 +17,7 @@ app.use(express.json());
  * req.body => { title, description }
  */
 
-app.post("/notes", async (req, res) => {
+app.post("/api/notes", async (req, res) => {
   const { title, description } = req.body;
 
   const note = await noteModel.create({
@@ -34,7 +35,7 @@ app.post("/notes", async (req, res) => {
  *
  */
 
-app.get("/notes", async (req, res) => {
+app.get("/api/notes", async (req, res) => {
   const notes = await noteModel.find();
 
   res.status(200).json({
