@@ -1,15 +1,42 @@
-const express = require ('express')
-const userModel = require ("../Models/user.model")
+const express = require("express");
+const userModel = require("../models/user.model");
 
-const authRouter =express.Router
+const authRouter = express.Router(); // () added
 
-authRouter.post("/resister", async (req, res)=>{
-    const {email, name , password} =req.body
+authRouter.post("/register", async (req, res) => {
+  const { email, name, password } = req.body;
 
-    const user =await userModel.create({
-        email, password, name
-    })
-    res.status(201).json({
-      message:"user registered"
-    })
-})
+  const user = await userModel.create({
+    email,
+    password,
+    name,
+  });
+
+  res.status(201).json({
+    message: "user registered",
+  });
+});
+
+module.exports = authRouter;
+
+// const express = require("express");
+// const userModel = require("../models/user.model");
+
+// const authRouter = express.Router();
+
+// authRouter.post("/register", async (req, res) => {
+
+//   const { email, name, password } = req.body;
+
+//   const user = await userModel.create({
+//     email,
+//     password,
+//     name,
+//   });
+
+//   res.status(201).json({
+//     message: "user registered",
+//   });
+// });
+
+// module.exports = authRouter;

@@ -1,8 +1,10 @@
 const mongoose =require("mongoose")
 
 function connectToDB(){
-    mongoose.connect(process.env.MONGO-URI)
+    mongoose.connect(process.env.MONGO_URI)
    .then(()=>{
-    console.log("connected to DB")
+    console.log("connected to data base")
    })
 }
+
+module.exports = connectToDB 

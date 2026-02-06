@@ -6,6 +6,6 @@ app.use (express.json ())
 /**
  * api/auth /register ko hit kar raha hai
  */
-app.use ("./api/auth",authRouter)
+app.use ("/api/auth",authRouter)
 
 module.exports =app
