@@ -3,11 +3,13 @@ const mongoose = require ("mongoose")
 const userSchema =new mongoose.Schema({
     name: String,
     email: {
-        type :String,
+    type :String,
         unique:[true, "with this email user account already exists"]
     },
+    // 
     passward: String
 })
 
 const userModel = mongoose.model("user",userSchema)
+
 module.exports = userModel

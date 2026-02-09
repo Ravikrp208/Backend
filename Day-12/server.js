@@ -1,4 +1,4 @@
-require('dotenv').config ()
+require('dotenv').config () //dotenv variable ko access karta hai
 const app= require("./src/app")
 const connectToDB =require("./src/config/database")
 
