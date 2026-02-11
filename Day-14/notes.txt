@@ -21,3 +21,6 @@
     follers:Array,
     Profile_iamge:String
   }
+
+  why we dont send password in response when we register s userin
+  bullet points
