@@ -13,6 +13,7 @@
   => follers
   => following
 
+//
   user ={
     username : String, 
     email: String,

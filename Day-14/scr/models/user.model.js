@@ -1,7 +1,6 @@
 const mongoose = require("mongoose")
-const { Profiler } = require("react")
 
-const userSchema = new mongoose.userSchema({
+const userSchema = new mongoose.Schema({
   username: {
     type: String,
     unique: [true, "User name already exists"],
@@ -19,9 +18,7 @@ const userSchema = new mongoose.userSchema({
   bio: String,
   ProfileImage: {
     type: String,
-    default:
-      "https://imgs.search.brave.com/veKl8ET9WhanlBbihrKWBEkRfga_K4vtJ2gNSmAM1iE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/dmVjdG9yc3RvY2su/Y29tL2kvNTAwcC80/MS85MS9hdmF0YXIt/ZGVmYXVsdC11c2Vy/LXByb2ZpbGUtaWNv/bi1zaW1wbGUtZmxh/dC1ncmV5LXZlY3Rv/ci01NzIzNDE5MS5q/cGc",
-  },
+     default: "https://ik.imagekit.io/hnoglyswo0/avatar-gender-neutral-silhouette-vector-600nw-2470054311.webp"  },
 });
 
 
