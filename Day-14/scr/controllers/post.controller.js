@@ -1,29 +1,77 @@
 const postModel = require("../models/post.model");
 const ImageKit = require("@imagekit/nodejs");
 const { toFile } = require("@imagekit/nodejs");
+const { Folders } = require("@imagekit/nodejs/resources/index.js");
 const jwt = require("jsonwebtoken");
-const { post } = require("../app");
-const { isValidElement } = require("react");
 
 const imagekit = new ImageKit({
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
 });
 
+// async function createPostController(req, res) {
+//   console.log(req.body, req.file);
+
+//   const file = await imagekit.files.upload({
+//     file: await toFile(Buffer.from(req.file.buffer), "file"),
+//     fileName: "Test",
+//   });
+
+//   res.send(file);
+// }
+
 async function createPostController(req, res) {
   console.log(req.body, req.file);
 
-  const file = await imagekit.files.upload({
-    file: await toFile(Buffer.from(req.file.buffer), "file"),
-    fileName: "Test",
-  });
+  const token = req.cookies.token;
 
-  res.send(file);
+  if (!token) {
+    return res.status(401).json({
+      message: "Token not provided , Unauthorized access",
+    });
+  }
+  let decoded = null;
+
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    return res.status(401).json({
+      message: "user not authorized",
+    });
+  }
+  console.log(decoded)
+
+
+  const file =await imagekit.file.upload({
+    file:await toFile(Buffer.from(req.file.buffer),'file'),
+    fileName:"Test",
+    folder:"cohort-2-insta-clone-posts"
+  })
+
+  const post =await postModel.create({
+    Caption:req.body.Caption,
+    imagUrl:file.url,
+    user:decoded.id
+  })
+
+  res.status(201).json({
+    message:"Post created successfully",post
+  })
 }
+
+/**
+ * post controller
+ */
 
 async function getPostController(req, res) {
   const token = req.cookies.token;
-  let decoded = null;
+  // let decoded = null;
 
+  if(!token){
+    return res.status(401).json({
+      message:"UnAuthorized Access"
+    })
+  }
+  let decoded;
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch (err) {
@@ -32,67 +80,65 @@ async function getPostController(req, res) {
     });
   }
 
-  const userId = decoded.userId
+  const userId = decoded.userId;
 
   const posts = await postModel.find({
-    user:userId
-  })
+    user: userId,
+  });
 
   res.status(200).json({
-    message:"Post fetched successfully",
-    posts
-  })
+    message: "Post fetched successfully.",
+    posts,
+  });
 }
 
 /**
- * 
+ * post details
  */
 
-async function getPostDetailsController(req, res){
-  const token = req.cookies.token
-     
-  if(!token){
+async function getPostDetailsController(req, res) {
+  const token = req.cookies.token;
+
+  if (!token) {
     return res.status(401).json({
-      message:"UnAuthorized Access"
-    })
+      message: "UnAuthorized Access",
+    });
   }
-  let decoded 
+  let decoded;
 
-  try{
-       decoded =jwt.verify(token,process.env.JWT_SECRET)
-  }
-  catch(err){
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
     return res.status(401).json({
-      message:"Invalid Token"
-    })
+      message: "Invalid Token",
+    });
   }
-    const userId = decoded.userId
-    const postId = req.params.postId
+  const userId = decoded.userId;
+  const postId = req.params.postId;
 
-    const Post = await postModel.findById(postId)
+  const Post = await postModel.findById(postId);
 
-    if(Post)
-    {
-      return res.status(404).json({
-        message:"Post not found"
-      })
-    }
+  if (Post) {
+    return res.status(404).json({
+      message: "Post not found",
+    });
+  }
 
-    const inValidUser = post.user ==userId
+  const isValidUser = post.user == userId;
 
-
-    if(!isValidUser){
-      return res.status(403).json({
-        message:"Forbidden Content."
-      })
-    }
-    return res.status(200).json({
-      message:"Post fetched successfully",post
-    })
-
+  if (!isValidUser) {
+    return res.status(403).json({
+      message: "Forbidden Content.",
+    });
+  }
+  return res.status(200).json({
+    message: "Post fetched successfully",
+    post,
+  });
 }
 
-module.exports = { createPostController,
+module.exports = {
+  createPostController,
   getPostController,
-  getPostDetailsController
+  getPostDetailsController,
 };

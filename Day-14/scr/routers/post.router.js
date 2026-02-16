@@ -9,17 +9,18 @@ const upload = multer({storage:multer.memoryStorage()})
  * post /api/[protected]
  * /api/posts/
  */
-// PostRouter.post("/",postController.createController)
+PostRouter.post("/",postController.createPostController)
 
-postRouter.port("/",upload.single("chacha"),postController.createController)
+PostRouter.post("/",upload.single("chacha"),postController.createPostController)
 
 /**
  * GET /api/posts/[protected]
  */
 
-postRouter.get("/",postController.getPostController)
+PostRouter.get("/",postController.getPostController)
 
 
-postRouter.get("/details/:postId",postController,getPostDetailsController)
+
+PostRouter.get("/details/:postId",postController.getPostDetailsController)
 
 module.exports = PostRouter
