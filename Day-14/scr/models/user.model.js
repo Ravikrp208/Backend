@@ -20,10 +20,18 @@ const userSchema = new mongoose.Schema({
     type: String,
      default: "https://ik.imagekit.io/hnoglyswo0/avatar-gender-neutral-silhouette-vector-600nw-2470054311.webp"  },
 
-
+ 
+     /**2000 */
 
      followers:[{
-      // type: mongoose.Schema
+      type: mongoose.Schema.Types.ObjectId,
+      ref:"users"
+     }],
+     /** 200 */
+
+     following:[{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"users"
      }]
 });
 
