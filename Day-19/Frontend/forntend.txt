@@ -1,0 +1,8 @@
+==> UI 
+  :- ui desion karna or navigate karna
+
+==> hook
+   :- 
+   state ko manage karna
+   
+

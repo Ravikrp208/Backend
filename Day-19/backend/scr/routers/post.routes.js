@@ -9,6 +9,7 @@ const identifyUser = require("../middlerwares/auth.middleware")
  * @route POST /api/posts [protected]
  * @description Create a post with the content and image (optional) provided in the request body. The post should be associated with the user that the request come from
  */
+
 postRouter.post(
   "/",
   upload.single("chacha"),
@@ -20,6 +21,7 @@ postRouter.post(
  * @route GET /api/posts/ [protected]
  * @description Get all the posts created by the user that the request come from. also return the total number of posts created by the user
  */
+
 postRouter.get("/", identifyUser, postController.getPostController);
 
 /**
