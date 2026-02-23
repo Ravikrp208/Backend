@@ -12,16 +12,19 @@ main {
   justify-content: center;
   align-items: center;
 
-  .form-container {
-    @include flex-column(1rem);
-    min-width: 350px;
-  }
+       
+       .form-container{
+          @include flex-column(1rem);
+          min-width: 350px;
+        }
 
-  from {
-   @include flex-column(1rem);
+        form {
+            display: flex;
+            justify-content: center;
+            @include flex-column(1rem);
 
    
-  }
+         }
         input
         {
             border: none;
