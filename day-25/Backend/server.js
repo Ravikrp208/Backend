@@ -1,6 +1,7 @@
 require("dotenv").config();
-const app = require("./scr/app");
-const connectToBD = require("./scr/config/database");
+const app = require("./src/app")
+const connectToBD = require("./src/config/database")
+const { request } = require("./src/app");
 
 connectToBD();
 app.listen(3000, () => {
