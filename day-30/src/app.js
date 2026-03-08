@@ -1,11 +1,12 @@
-const express = require("express");
+import express from "express";
+import authRouter from "./routes/auth.routes.js";
+import handleError from "./middleware/error.middleware.js";
+
 const app = express();
-
-
-// Middleware to parse JSON bodies
 app.use(express.json());
-// Import routes
-const authRoutes = require("./routes/auth.routes");
-// Use routes
-app.use("/api/auth", authRoutes);
-module.exports = app;
+
+app.use("/api/auth", authRouter);
+
+app.use(handleError);
+
+export default app;

@@ -115,13 +115,4 @@ async function logoutUser(req, res) {
   });
 }
 
-/**
- * key value
- * js object
- * {
- *  username:'test',
- *  email:'test@test.com'
- * }
- */
-
 module.exports = { registerUser, loginUser, getMe, logoutUser };
