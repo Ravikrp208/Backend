@@ -1,0 +1,6 @@
+scoket => single user
+oi => server
+
+
+on => event ko lision
+emit => event ko fire karna
