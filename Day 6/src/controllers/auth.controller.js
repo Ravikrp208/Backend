@@ -27,7 +27,7 @@ async function registerUser(req, res) {
 
      const token = jwt.sign({ 
         id: user._id }, 
-        process.env.JWT_SECRET, 
+        process.env.JWT_SECRET_KEY, 
         { expiresIn: "3d" });
 
 
@@ -67,7 +67,7 @@ async function loginUser(req, res) {
 
         const token = jwt.sign({
             id: user._id
-        }, process.env.JWT_SECRET,
+        }, process.env.JWT_SECRET_KEY,
          { 
             expiresIn: "3d" 
         });
