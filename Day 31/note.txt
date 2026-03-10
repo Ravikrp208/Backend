@@ -1,0 +1,17 @@
+Client → Request → Server → Response
+
+
+ connection =>
+
+io.on("connection", (socket) => {
+  console.log("user connected");
+});
+
+Emit =>
+socket.emit("message", "Hello Server");
+
+on (event receive karna)
+
+socket.on("message", (msg) => {
+  console.log(msg);
+});
