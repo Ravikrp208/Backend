@@ -1,7 +1,7 @@
 import "dotenv/config";
 import readline from "readline/promises";
 import { ChatMistralAI } from "@langchain/mistralai";
-import { HumanMessage } from "langchain";
+import { HumanMessage } from "langchain/schema";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -10,6 +10,7 @@ const rl = readline.createInterface({
 
 const model = new ChatMistralAI({
   model: "mistral-small-latest",
+  apiKey: process.env.MISTRAL_API_KEY, // ⭐ important
 });
 
 const messages = [];
