@@ -1,27 +1,21 @@
-import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
-export function authUser(req, res, next) {
-  const token = req.cookies.token;
+const chatSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    title: {
+      type: String,
+      default: "New Chat",
+      trim: true,
+    },
+  },
+  { timestamps: true },
+);
 
-  if (!token) {
-    return res.status(401).json({
-      message: "Unauthorized",
-      success: false,
-      err: "No token provided",
-    });
-  }
+const chatModel = mongoose.model("Chat", chatSchema);
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    req.user = decoded;
-
-    next();
-  } catch (err) {
-    return res.status(401).json({
-      message: "Unauthorized",
-      success: false,
-      err: "Invalid token",
-    });
-  }
-}
+export default chatModel;
