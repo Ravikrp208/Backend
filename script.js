@@ -22,7 +22,13 @@
 
 [1] + 1 // "11" 
 [1,2] + 1 // "1,21"
- 
-Number + Boolean = number
-String + Boolean = string
+
+/** 
+ * Number + Boolean = number
+ * String + Boolean = string
+*/
+
+
 console.log("Hello, World!");
+console.log([]==false)
+console.log([]==false) //t 
