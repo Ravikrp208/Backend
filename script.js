@@ -31,4 +31,17 @@
 
 console.log("Hello, World!");
 console.log([]==false)
-console.log([]==false) //t 
+console.log([]==false) //t
+/**
+ * string , number , boolean , array, object , tuple ,void, never
+ * type
+ */
+
+
+/**
+ * any , Unknown
+ */
+
+
+if ((typeof a) === "string")
+    console.log(a.toUpperCase()) 
