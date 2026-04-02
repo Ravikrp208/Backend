@@ -1,12 +1,12 @@
-const express = require('express');
+import express from "express";
+import runGraph from "./ai/graph.ai.js";
+
 const app = express();
 
+app.get("/", async (req, res) => {
+  const result = await runGraph("Write an code for Factorial function in js");
 
-app.use(cors());
-app.use(bodyParser.json());
+  res.json(result);
+});
 
-// Define your routes here
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-}
-);
+export default app;
