@@ -1,12 +1,8 @@
-import express from "express";
-import runGraph from "./ai/graph.ai.js";
+import express from 'express';
 
 const app = express();
 
-app.get("/", async (req, res) => {
-  const result = await runGraph("Write an code for Factorial function in js");
-
-  res.json(result);
-});
-
-export default app;
+app.get('/', (req, res) => {
+  res.send('Hello, World!');
+}
+);
