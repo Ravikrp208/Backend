@@ -12,7 +12,7 @@ app.get("/ " ,(req, res) =>{
 })
 
 
-//create notes
+//POST /notes  {title: "sample title", description: "sample description"}
 app.post ("/notes",(req,res)=>{
   console.log(req.body)
   notes.push(req.body)
@@ -20,23 +20,24 @@ app.post ("/notes",(req,res)=>{
   res.send("notes is created")
 })
 
-/* */
+/* GET /notes */
 
 app.get("/notes", (req,res)=>{
   res.send(notes)
 })
 
 
+/* DELETE /notes/:index  */
 app.delete("/notes/:index",(req,res)=>{
      console.log(req.params.index)
      console.log("note deleted successfully")
 })
-/* PATCH /note/:index  */
+/* PATCH /notes/:index  */
 /* req.body ={description :- "sample modified description "} */
-app.patch("/note/:index",(req, res)=>{
+app.patch("/notes/:index",(req, res)=>{
   notes[req.params.index].description =req.body.description
   notes[req.params.index].title =req.body.title
-  req.send("Note updated successfully")
+  res.send("Note updated successfully")
 })
 
 

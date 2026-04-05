@@ -1,29 +1,30 @@
 const express = require("express");
 
 const app = express();
+app.use(express.json()); //middle ware
 
 app.get("/", (req, res) => {
   res.send("I am learn backend ");
 });
-app.use(express.json())
 
-const note= []
 
-app.post ("/note",(req,res) =>{
+const notes= []
+
+app.post ("/notes",(req,res) =>{
     console.log(req.body)
-    note.push(res.body)
+    notes.push(req.body)
     res.send("note created")
 })
 
-app.delete("/note/:index", (req,res)=>{
+app.delete("/notes/:index", (req,res)=>{
   console.log(req.params.index)
 })
 
 
 
 
-app.get("/note",(req,res)=>{
-    res.send(note)
+app.get("/notes",(req,res)=>{
+    res.send(notes)
 })
 
 
