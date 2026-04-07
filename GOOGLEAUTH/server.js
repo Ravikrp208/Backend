@@ -14,36 +14,34 @@ app.get("/", (req, res) => {
 
 app.use(passport.initialize())
 
+
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: "/auth/google/callback" 
-}, (accessToken, refreshToken, profile, done) => {
-    // Here you would typically find or create a user in your database
-    // For this example, we'll just return the profile
-    return done(null, profile);
+
+
+}, (_, profile,done) => {
+    console.log(null, profile);
+
 }))
 
-app.get("/auth/google", (req,res) => {
-    console.log("with google0")
-})
+app.get("/auth/google",
+    //  (req,res) => {
+    // console.log("with google");
+    passport.authenticate("google", { scope: ["profile","email"] })
+)
 
 
-
-
-// app.get("/auth/google/callback", passport.authenticate("google", { failureRedirect: "/" }), (req, res) => {
-//     // Successful authentication, redirect home.
-//     res.redirect("/");
-// })
-
+app.get("/auth/google/callback"),
+    passport.authenticate("google", {  
+        session: false, 
+        failureRedirect: "/" }),
+        (req, res) => {
+        console.log(req.user );
+        res.redirect("google authentication successful")
+    }
     
-    
-
-
-
-
-
-
 app.listen(3000, () => {
     console.log("Server is running on port 3000")
 })
