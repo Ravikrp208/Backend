@@ -1,58 +1,42 @@
-import userModel from "../models/user.model.js";
+import useModel from "../models/user.model.js";
 import jwt from "jsonwebtoken";
-import { config } from "../config/config.js";
+import {config} from "../config/config.js"
 
-async function sendTokenResponse(user, res, message) {
-  const token = jwt.sign(
-    {
-      id: user._id,
-    },
-    config.JWT_SECRET,
-    {
-      expiresIn: "7d",
-    },
-  );
 
-  res.cookie("token", token);
+async function function semdTokenResponse(user, res) {
+    const token = Jwtsing({
+        id: user._id,
+    }, config.JWT_SECRET);
 
-  res.status(200).json({
-    message,
-    success: true,
-    user: {
-      id: user._id,
-      email: user.email,
-      contact: user.contact,
-      fullname: user.fullname,
-      role: user.role,
-    },
-  });
 }
 
 export const register = async (req, res) => {
-  const { email, contact, password, fullname, isSeller } = req.body;
+    const { email, contact, password, fullname, rol } = req.body;
 
-  try {
-    const existingUser = await userModel.findOne({
-      $or: [{ email }, { contact }],
-    });
+    try {
+        const existingUser = await useModel.findOne({ 
+            $or: [
+                { email }, 
+                { contact }
+            ]
+        })
 
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "User with this email or contact already exists" });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email or contact already exists" });
+        }
+
+        const newUser = new useModel({
+            email,
+            contact,
+            password,
+            fullname,
+        });
+
+
     }
+    catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: "Server error" });
+    }
+}
 
-    const user = await userModel.create({
-      email,
-      contact,
-      password,
-      fullname,
-      role: isSeller ? "seller" : "buyer",
-    });
-
-    await sendTokenResponse(user, res, "User registered successfully");
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: "Server error" });
-  }
-};
