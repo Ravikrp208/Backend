@@ -12,6 +12,7 @@ export async function registerUser({email , contact, password, fullname}) {
         contact,
         password,
         fullname,
+        isSeller
     });     
     return response.data;
 }
