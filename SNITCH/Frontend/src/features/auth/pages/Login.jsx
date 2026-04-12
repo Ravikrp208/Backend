@@ -1,38 +1,36 @@
 import React, { useState } from "react";
 import { useAuth } from "../hook/useAuth";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import ContinueWithGoogle from "../components/ContinueWithGoogle";
 
-const Register = () => {
-  const { handleRegister } = useAuth();
+const Login = () => {
+  const { handleLogin } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    fullName: "",
-    contactNumber: "",
     email: "",
     password: "",
-    isSeller: false,
   });
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await handleRegister({
-      email: formData.email,
-      contact: formData.contactNumber,
-      password: formData.password,
-      isSeller: formData.isSeller,
-      fullname: formData.fullName,
-    });
-    navigate("/");
+    try {
+      await handleLogin({
+        email: formData.email,
+        password: formData.password,
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Login failed", error);
+    }
   };
 
   return (
@@ -56,14 +54,14 @@ const Register = () => {
 
           <div className="mt-auto">
             <p className="text-5xl lg:text-6xl font-bold tracking-tighter leading-[1.1] text-white mb-6">
-              Define your <br />
+              Welcome <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#e9c400] to-[#ffd700]">
-                aesthetic.
+                back.
               </span>
             </p>
             <p className="text-[#d0c6ab] max-w-md text-lg leading-relaxed">
-              Join the exclusive movement of creators and brands redefining the
-              modern fashion landscape.
+              Sign in to explore the latest exclusive drops and manage your
+              aesthetic.
             </p>
           </div>
         </div>
@@ -74,46 +72,14 @@ const Register = () => {
         <div className="w-full max-w-md bg-[#131313] lg:bg-transparent p-10 md:p-14 lg:p-6 rounded-2xl lg:rounded-none shadow-[0_24px_48px_-12px_rgba(0,0,0,0.5)] lg:shadow-none">
           <div className="mb-12">
             <h2 className="text-sm uppercase tracking-widest text-[#FFD700] font-medium mb-3">
-              Welcome to Snitch
+              Sign in to Snitch
             </h2>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-white">
-              Elevate Your Style
+              Enter the Vault
             </h1>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-8">
-            {/* Full Name */}
-            <div className="flex flex-col">
-              <label className="text-sm text-[#d0c6ab] mb-2 font-medium">
-                Full Name
-              </label>
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                required
-                className="bg-[#1c1b1b] lg:bg-[#0e0e0e] text-white border-b-2 border-[#4d4732] focus:border-[#FFD700] outline-none px-4 py-3 transition-colors duration-300 focus:bg-[#201f1f] lg:focus:bg-[#131313]"
-                placeholder="e.g. John Doe"
-              />
-            </div>
-
-            {/* Contact Number */}
-            <div className="flex flex-col">
-              <label className="text-sm text-[#d0c6ab] mb-2 font-medium">
-                Contact Number
-              </label>
-              <input
-                type="tel"
-                name="contactNumber"
-                value={formData.contactNumber}
-                onChange={handleChange}
-                required
-                className="bg-[#1c1b1b] lg:bg-[#0e0e0e] text-white border-b-2 border-[#4d4732] focus:border-[#FFD700] outline-none px-4 py-3 transition-colors duration-300 focus:bg-[#201f1f] lg:focus:bg-[#131313]"
-                placeholder="+1 (555) 000-0000"
-              />
-            </div>
-
             {/* Email */}
             <div className="flex flex-col">
               <label className="text-sm text-[#d0c6ab] mb-2 font-medium">
@@ -132,9 +98,17 @@ const Register = () => {
 
             {/* Password */}
             <div className="flex flex-col">
-              <label className="text-sm text-[#d0c6ab] mb-2 font-medium">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm text-[#d0c6ab] font-medium">
+                  Password
+                </label>
+                <a
+                  href="#"
+                  className="text-xs text-[#999077] hover:text-[#FFD700] transition-colors"
+                >
+                  Forgot password?
+                </a>
+              </div>
               <input
                 type="password"
                 name="password"
@@ -146,54 +120,22 @@ const Register = () => {
               />
             </div>
 
-            {/* Is Seller Checkbox */}
-            <div className="flex items-center gap-4 mt-2 group w-max cursor-pointer">
-              <div className="relative flex items-center">
-                <input
-                  type="checkbox"
-                  name="isSeller"
-                  id="isSeller"
-                  checked={formData.isSeller}
-                  onChange={handleChange}
-                  className="peer appearance-none w-6 h-6 border border-[#4d4732] rounded bg-[#1c1b1b] lg:bg-[#0e0e0e] checked:bg-[#FFD700] checked:border-[#FFD700] cursor-pointer transition-colors duration-300 group-hover:border-[#FFD700]"
-                />
-                <svg
-                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none opacity-0 peer-checked:opacity-100 text-[#221b00]"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </div>
-              <label
-                htmlFor="isSeller"
-                className="text-sm text-[#e5e2e1] group-hover:text-[#FFD700] cursor-pointer select-none transition-colors duration-300"
-              >
-                Register as Seller
-              </label>
-            </div>
-
             {/* Submit Button */}
             <button
               type="submit"
               className="mt-6 w-full bg-gradient-to-r from-[#e9c400] to-[#ffd700] text-[#131313] font-bold tracking-wide py-4 px-8 rounded hover:shadow-[0_0_20px_rgba(255,215,0,0.3)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
             >
-              Sign Up
+              Sign In
             </button>
 
             <ContinueWithGoogle />
 
             <div className="text-center mt-6">
               <a
-                href="/login"
+                href="/register"
                 className="text-sm text-[#999077] hover:text-[#FFD700] transition-colors border-b border-transparent hover:border-[#FFD700] py-0.5"
               >
-                Already have an account? Sign in
+                Don't have an account? Sign up
               </a>
             </div>
           </form>
@@ -203,4 +145,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;
