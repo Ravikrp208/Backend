@@ -12,6 +12,8 @@ const Login = () => {
     password: "",
   });
 
+  const [error, setLocalError] = useState("");
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -22,6 +24,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLocalError("");
     try {
       await handleLogin({
         email: formData.email,
@@ -30,13 +33,20 @@ const Login = () => {
       navigate("/");
     } catch (error) {
       console.error("Login failed", error);
+      if (error.response?.data?.message) {
+        setLocalError(error.response.data.message);
+      } else if (error.response?.data?.errors) {
+         setLocalError(error.response.data.errors.map(err => err.msg).join(', '));
+      } else {
+        setLocalError("An unexpected error occurred during login.");
+      }
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0e0e0e] text-[#e5e2e1] font-sans selection:bg-[#FFD700] selection:text-[#131313] flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-[#0e0e0e] text-[#e5e2e1] font-sans selection:bg-[#FFD700] selection:text-[#131313] flex flex-col lg:flex-row-reverse">
       {/* Split Screen - Left Image Section (Hidden on mobile, visible on lg screens) */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-[#131313] items-center justify-center overflow-hidden border-r border-[#1c1b1b]">
+      <div className="hidden lg:flex lg:w-1/2 relative bg-[#131313] items-center justify-center overflow-hidden border-l border-[#1c1b1b]">
         <img
           src="/snitch_editorial.png"
           alt="Snitch Fashion Editorial"
@@ -78,6 +88,12 @@ const Login = () => {
               Enter the Vault
             </h1>
           </div>
+
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded text-red-500 text-sm">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-8">
             {/* Email */}

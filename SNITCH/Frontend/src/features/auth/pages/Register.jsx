@@ -15,6 +15,8 @@ const Register = () => {
     isSeller: false,
   });
 
+  const [error, setLocalError] = useState("");
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -25,20 +27,32 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await handleRegister({
-      email: formData.email,
-      contact: formData.contactNumber,
-      password: formData.password,
-      isSeller: formData.isSeller,
-      fullname: formData.fullName,
-    });
-    navigate("/");
+    setLocalError("");
+    try {
+      await handleRegister({
+        email: formData.email,
+        contact: formData.contactNumber,
+        password: formData.password,
+        isSeller: formData.isSeller,
+        fullname: formData.fullName,
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Register failed", error);
+      if (error.response?.data?.message) {
+        setLocalError(error.response.data.message);
+      } else if (error.response?.data?.errors) {
+         setLocalError(error.response.data.errors.map(err => err.msg).join(', '));
+      } else {
+        setLocalError("An unexpected error occurred during registration.");
+      }
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#0e0e0e] text-[#e5e2e1] font-sans selection:bg-[#FFD700] selection:text-[#131313] flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-[#0e0e0e] text-[#e5e2e1] font-sans selection:bg-[#FFD700] selection:text-[#131313] flex flex-col lg:flex-row-reverse">
       {/* Split Screen - Left Image Section (Hidden on mobile, visible on lg screens) */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-[#131313] items-center justify-center overflow-hidden border-r border-[#1c1b1b]">
+      <div className="hidden lg:flex lg:w-1/2 relative bg-[#131313] items-center justify-center overflow-hidden border-l border-[#1c1b1b]">
         <img
           src="/snitch_editorial.png"
           alt="Snitch Fashion Editorial"
