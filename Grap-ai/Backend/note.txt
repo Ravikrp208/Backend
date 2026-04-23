@@ -1,0 +1,19 @@
+1.what is LangGraph ?
+
+user-input = "write factorial code  in js
+
+
+const [solution_1, solution_2 ] =awit generate Solution(user-input)
+
+
+const resul = await judgeSolution (solution_1 , solution_2)
+
+
+design an YouTube like Application
+
+
+--ask for the Function requirments 
+-- ask for the non-requirments
+-- figure out the API in the System
+-- figure out the enities in the System
+-- create high level design of System

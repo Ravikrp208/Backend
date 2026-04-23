@@ -1,0 +1,83 @@
+==> Authentication
+  ==> login 
+  ==> logout (token Blacklisting)
+  ==> [otp based registration]
+
+ 
+ ===> post
+   => can see the feed
+   => like post 
+   => save post
+
+ ===> users
+  => follers
+  => following
+
+//
+  user ={
+    username : String, 
+    email: String,
+    Password:String,
+    bio:String,
+    follers:Array,
+    Profile_iamge:String
+  }
+
+  why we dont send password in response when we register s userin
+  bullet points
+
+_______________________________________________________________
+add a new function .//
+
+  async function createPostController(req, res) {
+  console.log(req.body, req.file);
+
+  const file = await imagekit.files.upload({
+    file: await toFile(Buffer.from(req.file.buffer), "file"),
+    fileName: "Test",
+  });
+
+  res.send(file);
+}
+
+
+//add identify
+ const token = req.cookies.token;
+
+  if (!token) {
+    return res.status(401).json({
+      message: "UnAuthorized Access",
+    });
+  }
+  let decoded;
+
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    return res.status(401).json({
+      message: "Invalid Token",
+    });
+  }
+  const userId = decoded.userId;
+
+
+
+//add new code identify
+   const token = req.cookies.token;
+  let decoded = null;
+
+  if(!token){
+    return res.status(401).json({
+      message:"UnAuthorized Access"
+    })
+  }
+  let decoded;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    return req.status(401).json({
+      message: "Token invalid",
+    });
+  }
+
+  const userId = decoded.userId;

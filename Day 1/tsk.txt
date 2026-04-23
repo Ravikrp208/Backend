@@ -1,0 +1,9 @@
+how to run script outside the browser
+what are packages
+how install packages
+how to use packages
+
+what is server
+create server with express
+programm server to response to users
+deploy server
