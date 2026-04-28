@@ -1,0 +1,8 @@
+FROM node:20-alpine (last push 1 week ago)  //Node or operating system image
+
+COPY ./package.json .
+COPY ./package-lock.json .
+
+RUN npm install
+
+COPY ./server.js .  
