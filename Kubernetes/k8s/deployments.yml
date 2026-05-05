@@ -1,0 +1,30 @@
+# deployment 
+apiVersion: apps/v1
+kind: Deployment  
+metadata:
+  name: express-deployment
+spec:
+  replicas: 2
+    selector:
+    matchLabels:
+      app: express
+  template:
+  metadata:
+    labels:
+      relation: express
+  spec:
+    containers:
+    - name: express
+      image: express:latest
+      ports:
+      - containerPort: 3000 
+      resources:
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+        requests:
+          memory: "64Mi"
+          cpu: "250m"
+
+
+
