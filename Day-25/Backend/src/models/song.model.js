@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const songSchema = new mongoose.Schema({
-  Url: {
+  url: {
     type: String,
     required: true,
   },
@@ -10,6 +10,10 @@ const songSchema = new mongoose.Schema({
     required: true,
   },
   title: {
+    type: String,
+    required: true,
+  },
+  mood: {
     type: String,
     required: true,
   },

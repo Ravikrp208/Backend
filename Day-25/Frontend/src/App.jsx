@@ -1,6 +1,6 @@
 import { RouterProvider } from "react-router";
-import { router } from "./app.routes";
-import "./features/shared/styles/global.scss";
+import { router } from "./app.router";
+import "./features/shared/global.scss";
 import { AuthProvider } from "./features/auth/auth.context";
 import { SongContextProvider } from "./features/home/song.context";
 

@@ -1,5 +1,5 @@
 const songModel = require("../models/song.model");
-const  stroageService = require("../services/storage.service");
+const storageService = require("../services/storage.service");
 const id3 = require("node-id3");
 
 async function uploadSong(req, res) {
