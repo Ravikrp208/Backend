@@ -4,18 +4,27 @@ import { useState } from "react";
 export const SongContext = createContext();
 
 export const SongContextProvider = ({ children }) => {
-  const [song, setSong] = useState({
-    url: "https://ik.imagekit.io/hnoglyswo0/cohort-2/moodify/songs/Lady_Singham_gs01DFz-1.mp3",
-    posterUrl:
-      "https://ik.imagekit.io/hnoglyswo0/cohort-2/moodify/posters/Lady_Singham_VW8DGJkie.jpeg",
-    title: "Lady Singham",
-    mood: "happy",
-  });
-
+  const [songs, setSongs] = useState([]);
+  const [allSongs, setAllSongs] = useState([]);
+  const [detectedMood, setDetectedMood] = useState(null);
+  const [song, setSong] = useState(null);
   const [loading, setLoading] = useState(false);
 
   return (
-    <SongContext.Provider value={{ loading, setLoading, song, setSong }}>
+    <SongContext.Provider
+      value={{
+        loading,
+        setLoading,
+        song,
+        setSong,
+        songs,
+        setSongs,
+        allSongs,
+        setAllSongs,
+        detectedMood,
+        setDetectedMood,
+      }}
+    >
       {children}
     </SongContext.Provider>
   );
