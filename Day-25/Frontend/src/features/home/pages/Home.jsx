@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import FaceExpression from "../../Expression/components/FaceExpression";
 import Player from "../components/Player";
 import Playlist from "../components/Playlist";
@@ -14,11 +14,11 @@ const Home = () => {
     handleGetAllSongs,
     handleGetSong,
     detectedMood,
+    setDetectedMood,
   } = useSong();
 
   const { user, handleLogout } = useAuth();
 
-  const [activeTab, setActiveTab] = useState("library"); // "library" or "scanner"
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMood, setSelectedMood] = useState("all");
 
@@ -43,9 +43,12 @@ const Home = () => {
     return true;
   });
 
-  const handleMoodSelect = (mood) => {
-    setSelectedMood(mood);
-    setActiveTab("library");
+  const handleFaceDetect = (expression) => {
+    handleGetSong({ mood: expression });
+  };
+
+  const resetScan = () => {
+    setDetectedMood(null);
   };
 
   return (
@@ -57,10 +60,10 @@ const Home = () => {
         </div>
 
         <div className="sidebar-menu">
-          <span className="menu-title">Discover</span>
+          <span className="menu-title">Navigation</span>
           <button
-            className={`menu-item ${activeTab === "library" ? "menu-item--active" : ""}`}
-            onClick={() => setActiveTab("library")}
+            className="menu-item menu-item--active"
+            onClick={resetScan}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <rect x="3" y="3" width="7" height="7" />
@@ -68,43 +71,34 @@ const Home = () => {
               <rect x="14" y="14" width="7" height="7" />
               <rect x="3" y="14" width="7" height="7" />
             </svg>
-            Music Library
-          </button>
-          
-          <button
-            className={`menu-item ${activeTab === "scanner" ? "menu-item--active" : ""}`}
-            onClick={() => setActiveTab("scanner")}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-              <circle cx="12" cy="13" r="4" />
-            </svg>
-            AI Mood Scanner
+            Home Dashboard
           </button>
         </div>
 
-        <div className="sidebar-menu">
-          <span className="menu-title">Quick Moods</span>
-          <div className="sidebar-moods">
-            {["happy", "sad", "neutral", "surprised"].map((mood) => (
-              <button
-                key={mood}
-                className={`mood-btn mood-${mood} ${selectedMood === mood && activeTab === "library" ? "active-mood" : ""}`}
-                onClick={() => handleMoodSelect(mood)}
-              >
-                <span style={{ textTransform: "capitalize" }}>{mood}</span>
-                <span>
-                  {mood === "happy" && "☀️"}
-                  {mood === "sad" && "🌧️"}
-                  {mood === "neutral" && "😐"}
-                  {mood === "surprised" && "😲"}
-                </span>
-              </button>
-            ))}
+        {detectedMood && (
+          <div className="sidebar-menu">
+            <span className="menu-title">Quick Moods</span>
+            <div className="sidebar-moods">
+              {["happy", "sad", "neutral", "surprised"].map((mood) => (
+                <button
+                  key={mood}
+                  className={`mood-btn mood-${mood} ${selectedMood === mood ? "active-mood" : ""}`}
+                  onClick={() => setSelectedMood(mood)}
+                >
+                  <span style={{ textTransform: "capitalize" }}>{mood}</span>
+                  <span>
+                    {mood === "happy" && "☀️"}
+                    {mood === "sad" && "🌧️"}
+                    {mood === "neutral" && "😐"}
+                    {mood === "surprised" && "😲"}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Logout button at bottom */}
+        {/* Logout button */}
         <div style={{ marginTop: "auto" }}>
           <button
             className="menu-item"
@@ -135,6 +129,7 @@ const Home = () => {
               placeholder="Search by song name or mood..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              disabled={!detectedMood}
             />
           </div>
 
@@ -146,95 +141,117 @@ const Home = () => {
           </div>
         </header>
 
-        {/* Content Panel based on activeTab */}
-        {activeTab === "library" ? (
-          <div className="view-library">
-            <div className="library-title-row">
-              <h2>Browse Music</h2>
-              <span className="song-count">{filteredSongs.length} songs</span>
-            </div>
-
-            <div className="category-pills">
-              {["all", "happy", "sad", "neutral", "surprised"].map((mood) => (
-                <button
-                  key={mood}
-                  className={`pill ${selectedMood === mood ? "pill--active" : ""}`}
-                  onClick={() => setSelectedMood(mood)}
-                >
-                  {mood}
-                </button>
-              ))}
-            </div>
-
-            <div className="songs-grid">
-              {filteredSongs.map((item) => {
-                const isActive = song?._id === item._id;
-                return (
-                  <div
-                    key={item._id}
-                    className={`song-card ${isActive ? "song-card--active" : ""}`}
-                    onClick={() => setSong(item)}
-                  >
-                    <div className="card-cover-wrap">
-                      <img src={item.posterUrl} alt={item.title} />
-                      <div className="play-overlay">
-                        <div className="play-btn-circle">
-                          {isActive ? (
-                            <svg viewBox="0 0 24 24">
-                              <rect x="6" y="4" width="4" height="16" />
-                              <rect x="14" y="4" width="4" height="16" />
-                            </svg>
-                          ) : (
-                            <svg viewBox="0 0 24 24">
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <h3 className="song-card__title" title={item.title}>
-                      {item.title}
-                    </h3>
-                    <div className="card-footer">
-                      <span className={`song-mood-tag song-mood-tag--${item.mood}`}>
-                        {item.mood}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-              {filteredSongs.length === 0 && (
-                <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "4rem", opacity: 0.4 }}>
-                  No songs matching your current search filters.
-                </div>
-              )}
-            </div>
+        {/* 1. Welcome Banner (Home page styling) */}
+        <section className="welcome-banner">
+          <div className="welcome-banner__content">
+            <h1>Moodify AI — Personalized Music 🎵</h1>
+            <p>
+              Experience music tailored to your emotions. Position your face in front of the camera below, scan your expression, and watch the AI instantly unlock a custom playlist and our entire 100-song library!
+            </p>
           </div>
-        ) : (
-          <div className="view-scanner">
-            <div>
-              <div className="library-title-row" style={{ marginBottom: "1.5rem" }}>
-                <h2 style={{ fontSize: "1.6rem" }}>AI Mood Analysis</h2>
-              </div>
-              <FaceExpression
-                onClick={(expression) => {
-                  handleGetSong({ mood: expression });
-                }}
-              />
+        </section>
+
+        {/* 2. Face Detection Section (Directly visible on Homepage) */}
+        <section className="scanner-section-wrap">
+          <div className="view-scanner-center">
+            <div className="sec-header">
+              <h2>Face AI Mood Detection</h2>
+              <p>Detect your face expression to unlock the song library</p>
             </div>
-            
-            <div className="recommendations-wrap">
-              <div className="sec-title">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ff5e3a" strokeWidth="2.5">
-                  <path d="M9 18V5l12-2v13" />
-                  <circle cx="6" cy="18" r="3" />
-                  <circle cx="18" cy="16" r="3" />
-                </svg>
-                <span>Recommended Playlist</span>
+            <FaceExpression onClick={handleFaceDetect} />
+          </div>
+        </section>
+
+        {/* 3. Song List Section (Revealed AFTER face detection is successful) */}
+        {detectedMood ? (
+          <div className="reveal-container" style={{ animation: "fadeIn 0.6s ease-out" }}>
+            {/* AI Recommendations */}
+            <section className="recommended-section">
+              <div className="library-title-row">
+                <h2>AI Recommended Songs for Your Mood</h2>
+                <button className="reset-scan-btn" onClick={resetScan}>
+                  Scan Again
+                </button>
               </div>
               <Playlist />
-            </div>
+            </section>
+
+            {/* Complete Library Grid */}
+            <section className="view-library" id="music-library-section">
+              <div className="library-title-row">
+                <h2>Browse Complete Library (100 Songs)</h2>
+                <span className="song-count">{filteredSongs.length} songs</span>
+              </div>
+
+              <div className="category-pills">
+                {["all", "happy", "sad", "neutral", "surprised"].map((mood) => (
+                  <button
+                    key={mood}
+                    className={`pill ${selectedMood === mood ? "pill--active" : ""}`}
+                    onClick={() => setSelectedMood(mood)}
+                  >
+                    {mood}
+                  </button>
+                ))}
+              </div>
+
+              <div className="songs-grid">
+                {filteredSongs.map((item) => {
+                  const isActive = song?._id === item._id;
+                  return (
+                    <div
+                      key={item._id}
+                      className={`song-card ${isActive ? "song-card--active" : ""}`}
+                      onClick={() => setSong(item)}
+                    >
+                      <div className="card-cover-wrap">
+                        <img src={item.posterUrl} alt={item.title} />
+                        <div className="play-overlay">
+                          <div className="play-btn-circle">
+                            {isActive ? (
+                              <svg viewBox="0 0 24 24">
+                                <rect x="6" y="4" width="4" height="16" />
+                                <rect x="14" y="4" width="4" height="16" />
+                              </svg>
+                            ) : (
+                              <svg viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <h3 className="song-card__title" title={item.title}>
+                        {item.title}
+                      </h3>
+                      <div className="card-footer">
+                        <span className={`song-mood-tag song-mood-tag--${item.mood}`}>
+                          {item.mood}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+                {filteredSongs.length === 0 && (
+                  <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "4rem", opacity: 0.4 }}>
+                    No songs matching your current search filters.
+                  </div>
+                )}
+              </div>
+            </section>
           </div>
+        ) : (
+          /* Locked State Placeholder */
+          <section className="library-locked-placeholder">
+            <div className="lock-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <h3>Library Locked</h3>
+            <p>Please use the Face AI Scanner above to detect your current mood and unlock the music library.</p>
+          </section>
         )}
       </main>
 

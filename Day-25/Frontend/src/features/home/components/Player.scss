@@ -1,16 +1,18 @@
 .player {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: #1a1a1a;
-    border-top: 1px solid #333;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: rgba(18, 18, 20, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 18px;
     padding: 12px 24px;
     display: flex;
     align-items: center;
     gap: 24px;
     z-index: 100;
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
 
     /* ── Song Info ── */
     &__info {
