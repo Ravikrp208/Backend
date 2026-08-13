@@ -1,166 +1,372 @@
-import { useState, useRef, useEffect } from 'react'
-import { getAiResponses } from './mockService'
+import React, { useState, useEffect, useRef } from 'react';
+import { executeBattle, getModelsInfo, getBattleHistory, DEFAULT_MODELS } from './apiService';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import SolutionCard from './components/SolutionCard';
+import JudgeCard from './components/JudgeCard';
+import EmptyState from './components/EmptyState';
+import ThinkingStage from './components/ThinkingStage';
+import StatsModal from './components/StatsModal';
+import { Send, Sparkles, Swords, AlertCircle, RefreshCw, Layers } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
-function App() {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      type: 'user',
-      content: 'Welcome to AI Benchmarker. How can I assist you today?'
-    },
-    {
-      id: 2,
-      type: 'comparison',
-      solutions: [
-        { id: 'A', name: 'Neural Alpha', content: 'Ready for deep analysis. Type your query below.' },
-        { id: 'B', name: 'Logic Beta', content: 'System online. I will provide a distinct perspective.' }
-      ],
-      judge: { 
-        title: 'Judge Initialization', 
-        verdict: 'Both models are calibrated. I will analyze their outputs for you.' 
+export default function App() {
+  const [models, setModels] = useState(DEFAULT_MODELS);
+  const [history, setHistory] = useState([]);
+  const [activeBattle, setActiveBattle] = useState(null);
+  const [input, setInput] = useState('');
+  const [isThinking, setIsThinking] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [votedMap, setVotedMap] = useState({});
+
+  const battleEndRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  // Initialize data on mount
+  useEffect(() => {
+    async function initData() {
+      // 1. Fetch models
+      const modelsData = await getModelsInfo();
+      if (modelsData) setModels(modelsData);
+
+      // 2. Fetch history from backend or localStorage
+      const backendHistory = await getBattleHistory();
+      const localHistoryStr = localStorage.getItem('grap_ai_arena_history');
+      let localHistory = [];
+      if (localHistoryStr) {
+        try { localHistory = JSON.parse(localHistoryStr); } catch (e) {}
+      }
+
+      const combined = backendHistory.length > 0 ? backendHistory : localHistory;
+      setHistory(combined);
+      if (combined.length > 0) {
+        setActiveBattle(combined[0]);
       }
     }
-  ])
-  const [input, setInput] = useState('')
-  const [isThinking, setIsThinking] = useState(false)
-  const messagesEndRef = useRef(null)
+    initData();
+  }, []);
+
+  // Save history to localStorage whenever updated
+  useEffect(() => {
+    if (history.length > 0) {
+      localStorage.setItem('grap_ai_arena_history', JSON.stringify(history));
+    }
+  }, [history]);
+
+  // Compute live stats
+  const stats = {
+    total: history.length,
+    mistralWins: history.filter(b => b.judge?.winner === 'solution_1').length,
+    cohereWins: history.filter(b => b.judge?.winner === 'solution_2').length,
+    ties: history.filter(b => b.judge?.winner === 'tie').length,
+  };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+    battleEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages, isThinking])
+    if (isThinking || activeBattle) {
+      scrollToBottom();
+    }
+  }, [isThinking, activeBattle]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isThinking) return
+  // Handle battle dispatch
+  const handleStartBattle = async (promptText) => {
+    const query = (promptText || input).trim();
+    if (!query || isThinking) return;
 
-    const userMsg = { id: Date.now(), type: 'user', content: input }
-    setMessages(prev => [...prev, userMsg])
-    setInput('')
-    setIsThinking(true)
+    setInput('');
+    setErrorMessage('');
+    setIsThinking(true);
+
+    // Placeholder active battle while thinking
+    const tempBattle = {
+      id: `temp_${Date.now()}`,
+      problem: query,
+      timestamp: new Date().toISOString(),
+      solution_1: '',
+      solution_2: '',
+      judge: null,
+    };
+    setActiveBattle(tempBattle);
 
     try {
-      const { solutions, judgeVerdict } = await getAiResponses(input)
-      const aiTurn = {
-        id: Date.now() + 1,
-        type: 'comparison',
-        solutions: solutions,
-        judge: judgeVerdict
+      const response = await executeBattle(query);
+      if (response && response.battle) {
+        const fullBattle = response.battle;
+        setActiveBattle(fullBattle);
+        setHistory(prev => [fullBattle, ...prev.filter(b => b.id !== fullBattle.id)]);
+        
+        if (response.models) {
+          setModels(response.models);
+        }
+
+        // Celebrate winner with confetti
+        if (fullBattle.judge?.winner) {
+          confetti({
+            particleCount: 60,
+            spread: 70,
+            origin: { y: 0.6 },
+          });
+        }
+      } else {
+        throw new Error(response.error || "Failed to receive battle results.");
       }
-      setMessages(prev => [...prev, aiTurn])
-    } catch (error) {
-      console.error("AI Error:", error)
+    } catch (err) {
+      console.error("Battle execution failed:", err);
+      setErrorMessage(err.message || "An unexpected error occurred during execution.");
     } finally {
-      setIsThinking(false)
+      setIsThinking(false);
     }
-  }
+  };
+
+  const handleSelectBattle = (battle) => {
+    setActiveBattle(battle);
+    setErrorMessage('');
+  };
+
+  const handleNewBattle = () => {
+    setActiveBattle(null);
+    setInput('');
+    setErrorMessage('');
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
+  const handleClearHistory = () => {
+    if (window.confirm("Are you sure you want to clear all battle history?")) {
+      setHistory([]);
+      setActiveBattle(null);
+      localStorage.removeItem('grap_ai_arena_history');
+    }
+  };
+
+  const handleExport = () => {
+    if (!activeBattle) {
+      alert("No active battle to export!");
+      return;
+    }
+
+    const report = {
+      title: "Graph-AI Arena Battle Report",
+      exportedAt: new Date().toISOString(),
+      battle: activeBattle,
+      models: models,
+    };
+
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `arena-duel-${activeBattle.id || 'report'}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleVote = (modelId) => {
+    if (!activeBattle) return;
+    setVotedMap(prev => ({
+      ...prev,
+      [activeBattle.id]: modelId,
+    }));
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleStartBattle();
+    }
+  };
 
   return (
-    <div className="flex h-screen bg-[#0c1324] text-[#dce1fb] font-inter">
-      {/* Sidebar */}
-      <aside className="w-[260px] bg-[#191f31]/40 backdrop-blur-2xl border-r border-white/5 flex flex-col p-6">
-        <button className="bg-gradient-to-br from-[#7bd0ff] to-[#008abb] text-[#00354a] py-3 rounded-full font-semibold mb-6 hover:scale-[1.02] hover:shadow-[0_4px_20px_rgba(123,208,255,0.3)] transition-all cursor-pointer">
-          + New Discussion
-        </button>
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-2.5 mb-2 rounded-lg cursor-pointer hover:bg-white/5 text-[#b9c8de] hover:text-[#dce1fb] text-sm transition-all">
-            Design System Strategy
-          </div>
-          <div className="p-2.5 mb-2 rounded-lg cursor-pointer hover:bg-white/5 text-[#b9c8de] hover:text-[#dce1fb] text-sm transition-all">
-            AI Architecture Review
-          </div>
-          <div className="p-2.5 mb-2 rounded-lg cursor-pointer hover:bg-white/5 text-[#b9c8de] hover:text-[#dce1fb] text-sm transition-all">
-            Frontend Performance
-          </div>
-        </div>
-        <div className="mt-auto text-[12px] text-[#45464d]">
-          Neural Obsidian v1.0
-        </div>
-      </aside>
+    <div className="flex flex-col h-screen w-full bg-[#060a14] text-[#e2e8f8] overflow-hidden">
+      {/* Top Header */}
+      <Header
+        onOpenStats={() => setIsStatsOpen(true)}
+        onExport={handleExport}
+        onClear={handleNewBattle}
+        battleCount={history.length}
+        models={models}
+        isLive={!isThinking}
+      />
 
-      {/* Main Chat */}
-      <main className="flex-1 flex flex-col p-10 relative overflow-y-auto">
-        <div className="max-w-[900px] mx-auto w-full flex-1">
-          {messages.map((msg) => (
-            <div key={msg.id} className="mb-12 animate-in fade-in duration-500 slide-in-from-bottom-2">
-              {msg.type === 'user' ? (
-                <div className="text-right mb-8">
-                  <div className="inline-block bg-[#23293c] px-6 py-4 rounded-3xl rounded-br-sm max-w-[80%] text-left">
-                    {msg.content}
+      {/* Main Workspace Layout */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Sidebar */}
+        <Sidebar
+          history={history}
+          activeBattleId={activeBattle?.id}
+          onSelectBattle={handleSelectBattle}
+          onNewBattle={handleNewBattle}
+          onClearHistory={handleClearHistory}
+          stats={stats}
+          models={models}
+        />
+
+        {/* Center Main Arena Stage */}
+        <main className="flex-1 flex flex-col h-full bg-[#080d1c] relative overflow-hidden bg-grid-pattern">
+          {/* Subtle Ambient Radial Glows */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#0284c7]/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-[#818cf8]/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          {/* Scrollable Arena Feed */}
+          <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6">
+            <div className="max-w-6xl mx-auto space-y-8">
+              {/* Error Banner if any */}
+              {errorMessage && (
+                <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between text-rose-300 text-xs shadow-lg animate-in fade-in">
+                  <div className="flex items-center gap-2.5">
+                    <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                    <span>{errorMessage}</span>
                   </div>
+                  <button
+                    onClick={() => handleStartBattle(activeBattle?.problem)}
+                    className="flex items-center gap-1 px-3 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 font-semibold cursor-pointer transition-all"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Retry Duel</span>
+                  </button>
                 </div>
-              ) : (
-                <>
-                  <div className="flex gap-5 mb-5">
-                    {msg.solutions.map((sol) => (
-                      <div key={sol.id} className="flex-1 bg-[#191f31]/60 backdrop-blur-lg rounded-2xl p-6 border border-white/5 hover:-translate-y-0.5 hover:border-[#7bd0ff]/20 transition-all">
-                        <div className="text-[12px] uppercase tracking-wider text-[#7bd0ff] mb-4 font-bold">
-                          {sol.name}
-                        </div>
-                        <div className="text-[15px] leading-relaxed text-[#dce1fb]">
-                          {sol.content}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="bg-[#251400]/30 backdrop-blur-lg border border-[#ffb95f]/10 rounded-2xl p-6 relative overflow-hidden before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-[#ffb95f]">
-                    <div className="text-[#ffb95f] flex items-center gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"></path>
-                      </svg>
-                      <strong className="font-bold">{msg.judge.title}</strong>
-                    </div>
-                    <div className="text-[15px] leading-relaxed text-[#dce1fb] mt-3">
-                      {msg.judge.verdict.split('\n').map((line, i) => (
-                        <p key={i} className="m-0">{line}</p>
-                      ))}
-                    </div>
-                  </div>
-                </>
               )}
-            </div>
-          ))}
 
-          {isThinking && (
-            <div className="mb-12">
-              <div className="flex gap-5">
-                <div className="flex-1 bg-[#191f31]/30 backdrop-blur-lg rounded-2xl p-6 border border-white/5 animate-pulse">
-                  <div className="text-[12px] uppercase tracking-wider text-[#7bd0ff]/50 mb-4 font-bold">Thinking...</div>
-                  <div className="h-4 bg-[#7bd0ff]/5 rounded w-3/4"></div>
+              {/* View 1: Empty state / Prompt explorer */}
+              {!activeBattle && !isThinking ? (
+                <EmptyState 
+                  onSelectPrompt={(prompt) => {
+                    setInput(prompt);
+                    handleStartBattle(prompt);
+                  }}
+                  models={models}
+                />
+              ) : (
+                /* View 2: Active Battle Stage */
+                <div className="space-y-8 animate-in fade-in duration-300">
+                  {/* User Problem Card */}
+                  <div className="p-5 rounded-2xl bg-[#0e162b]/90 border border-white/10 backdrop-blur-xl shadow-[0_4px_25px_rgba(0,0,0,0.4)] relative">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2 text-xs font-bold text-[#38bdf8] uppercase tracking-wider">
+                        <Swords className="w-4 h-4 text-[#38bdf8]" />
+                        <span>Active Arena Challenge</span>
+                      </div>
+                      {activeBattle?.total_time_ms > 0 && (
+                        <span className="text-[11px] text-gray-400 font-mono bg-white/5 px-2.5 py-0.5 rounded-full border border-white/5">
+                          Total Duel Time: {(activeBattle.total_time_ms / 1000).toFixed(2)}s
+                        </span>
+                      )}
+                    </div>
+                    <h2 className="text-base sm:text-lg font-heading font-semibold text-white leading-relaxed">
+                      {activeBattle?.problem}
+                    </h2>
+                  </div>
+
+                  {/* Thinking Stage if in progress */}
+                  {isThinking && (
+                    <ThinkingStage problem={activeBattle?.problem} />
+                  )}
+
+                  {/* Solutions Side-by-Side if available */}
+                  {!isThinking && activeBattle?.solution_1 && (
+                    <>
+                      {/* Model Duel Comparison Grid */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Model 1: Mistral */}
+                        <SolutionCard
+                          model={models.model_1}
+                          content={activeBattle.solution_1}
+                          timeMs={activeBattle.solution_1_time_ms}
+                          score={activeBattle.judge?.solution_1_score}
+                          isWinner={activeBattle.judge?.winner === 'solution_1'}
+                          isTie={activeBattle.judge?.winner === 'tie'}
+                          onVote={handleVote}
+                          voted={votedMap[activeBattle.id] === models.model_1?.id}
+                        />
+
+                        {/* Model 2: Cohere */}
+                        <SolutionCard
+                          model={models.model_2}
+                          content={activeBattle.solution_2}
+                          timeMs={activeBattle.solution_2_time_ms}
+                          score={activeBattle.judge?.solution_2_score}
+                          isWinner={activeBattle.judge?.winner === 'solution_2'}
+                          isTie={activeBattle.judge?.winner === 'tie'}
+                          onVote={handleVote}
+                          voted={votedMap[activeBattle.id] === models.model_2?.id}
+                        />
+                      </div>
+
+                      {/* Impartial Gemini Flash Judge Evaluation Card */}
+                      {activeBattle.judge && (
+                        <JudgeCard
+                          judge={activeBattle.judge}
+                          model1={models.model_1}
+                          model2={models.model_2}
+                          timeMs={activeBattle.judge_time_ms}
+                        />
+                      )}
+                    </>
+                  )}
                 </div>
-                <div className="flex-1 bg-[#191f31]/30 backdrop-blur-lg rounded-2xl p-6 border border-white/5 animate-pulse">
-                  <div className="text-[12px] uppercase tracking-wider text-[#7bd0ff]/50 mb-4 font-bold">Thinking...</div>
-                  <div className="h-4 bg-[#7bd0ff]/5 rounded w-1/2"></div>
-                </div>
+              )}
+
+              <div ref={battleEndRef} />
+            </div>
+          </div>
+
+          {/* Floating Composer Bar */}
+          <div className="px-4 sm:px-8 py-4 bg-[#070c18]/90 backdrop-blur-2xl border-t border-white/8 shrink-0 z-20">
+            <div className="max-w-4xl mx-auto">
+              <div className="relative rounded-2xl bg-[#0e162b] border border-white/10 focus-within:border-[#38bdf8] focus-within:shadow-[0_0_30px_rgba(56,189,248,0.25)] transition-all flex items-end p-2 gap-2 shadow-2xl">
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Enter a coding challenge, architecture question, or algorithm duel (Press Enter to start)..."
+                  rows={1}
+                  disabled={isThinking}
+                  className="flex-1 bg-transparent border-none text-white placeholder-gray-500 px-3 py-2 text-sm focus:outline-none resize-none max-h-32 min-h-[44px]"
+                  style={{ height: 'auto', minHeight: '44px' }}
+                />
+
+                <button
+                  onClick={() => handleStartBattle()}
+                  disabled={!input.trim() || isThinking}
+                  title="Run Arena Duel"
+                  className="bg-gradient-to-tr from-[#0284c7] via-[#38bdf8] to-[#6366f1] hover:from-[#0369a1] hover:via-[#0284c7] hover:to-[#4f46e5] text-white p-2.5 rounded-xl font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer shadow-[0_2px_15px_rgba(56,189,248,0.4)] hover:scale-105 active:scale-95 shrink-0 flex items-center justify-center"
+                >
+                  {isThinking ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Send className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+
+              {/* Input Footer Note */}
+              <div className="flex items-center justify-between px-2 pt-2 text-[11px] text-gray-500">
+                <span className="flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-[#38bdf8]" />
+                  <span>Parallel invocation across Mistral & Cohere &middot; Evaluated by Gemini Flash</span>
+                </span>
+                <span className="hidden sm:inline font-mono">
+                  Enter to Send &middot; Shift+Enter for Newline
+                </span>
               </div>
             </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Input Area */}
-        <div className="max-w-[900px] mx-auto w-full pb-5">
-          <div className="bg-[#070d1f] rounded-3xl px-4 py-2 flex items-center border border-white/10 focus-within:border-[#7bd0ff] focus-within:shadow-[0_0_20px_rgba(123,208,255,0.1)] transition-all">
-            <input 
-              className="flex-1 bg-transparent border-none text-[#dce1fb] p-3 outline-none text-base resize-none"
-              placeholder="Send a message to compare models..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            />
-            <button className="bg-transparent text-[#7bd0ff] p-2 rounded-full hover:bg-[#7bd0ff]/10 transition-all disabled:opacity-50 cursor-pointer" onClick={handleSend} disabled={isThinking}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-              </svg>
-            </button>
           </div>
-        </div>
-      </main>
-    </div>
-  )
-}
+        </main>
+      </div>
 
-export default App
+      {/* Arena Stats Modal */}
+      <StatsModal
+        isOpen={isStatsOpen}
+        onClose={() => setIsStatsOpen(false)}
+        stats={stats}
+        history={history}
+      />
+    </div>
+  );
+}
