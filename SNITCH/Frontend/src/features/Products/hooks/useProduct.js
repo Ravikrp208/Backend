@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import {
   createProduct,
   getSellerProduct,
@@ -11,32 +12,31 @@ import { setSellerProducts, setProducts } from "../state/product.slice";
 export const useProduct = () => {
   const dispatch = useDispatch();
 
-  async function handleCreateProduct(formData) {
+  const handleCreateProduct = useCallback(async (formData) => {
     const data = await createProduct(formData);
     return data.product;
-  }
+  }, []);
 
-  async function handleGetSellerProduct() {
+  const handleGetSellerProduct = useCallback(async () => {
     const data = await getSellerProduct();
     dispatch(setSellerProducts(data.products));
     return data.products;
-  }
+  }, [dispatch]);
 
-  async function handleGetAllProducts() {
+  const handleGetAllProducts = useCallback(async () => {
     const data = await getAllProducts();
     dispatch(setProducts(data.products));
-  }
+  }, [dispatch]);
 
-  async function handleGetProductById(productId) {
+  const handleGetProductById = useCallback(async (productId) => {
     const data = await getProductById(productId);
     return data.product;
-  }
+  }, []);
 
-  async function handleAddProductVariant(productId, newProductVariant) {
+  const handleAddProductVariant = useCallback(async (productId, newProductVariant) => {
     const data = await addProductVariant(productId, newProductVariant);
-
     return data;
-  }
+  }, []);
 
   return {
     handleCreateProduct,

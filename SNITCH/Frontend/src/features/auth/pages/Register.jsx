@@ -6,6 +6,7 @@ import ContinueWithGoogle from "../components/ContinueWithGoogle";
 const Register = () => {
   const { handleRegister } = useAuth();
   const navigate = useNavigate();
+  const [errorMsg, setErrorMsg] = useState("");
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -25,14 +26,21 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await handleRegister({
-      email: formData.email,
-      contact: formData.contactNumber,
-      password: formData.password,
-      isSeller: formData.isSeller,
-      fullname: formData.fullName,
-    });
-    navigate("/");
+    setErrorMsg("");
+    try {
+      await handleRegister({
+        email: formData.email,
+        contact: formData.contactNumber,
+        password: formData.password,
+        isSeller: formData.isSeller,
+        fullname: formData.fullName,
+      });
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      const message = err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || "Failed to register. Please check your inputs.";
+      setErrorMsg(message);
+    }
   };
 
   const inputStyle = {
@@ -149,6 +157,12 @@ const Register = () => {
               </h1>
             </div>
 
+            {errorMsg && (
+              <div className="mb-6 p-4 text-[#ba1a1a] bg-[#ffdad6] text-xs font-medium tracking-wide border-l-2 border-[#ba1a1a]">
+                {errorMsg}
+              </div>
+            )}
+
             {/* Form */}
             <form onSubmit={handleSubmit} className="flex flex-col gap-9">
               {/* Full Name */}
@@ -191,7 +205,7 @@ const Register = () => {
                   value={formData.contactNumber}
                   onChange={handleChange}
                   required
-                  placeholder="+91 98765 43210"
+                  placeholder="10-digit mobile number (e.g. 9876543210)"
                   className="w-full bg-transparent outline-none py-3 text-sm transition-colors duration-300"
                   style={inputStyle}
                   onFocus={handleFocus}

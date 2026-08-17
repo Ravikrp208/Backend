@@ -1,5 +1,5 @@
 import React from "react";
-import Nav from "../features/Shared/Components/Nav";
+import Nav from "../features/Shared/Nav";
 import { Outlet } from "react-router";
 
 const AppLayout = () => {

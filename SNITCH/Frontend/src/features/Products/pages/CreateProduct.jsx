@@ -25,7 +25,7 @@ const CreateProduct = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const addFiles = (files) => {
+  const addFiles = useCallback((files) => {
     const remaining = MAX_IMAGES - images.length;
     if (remaining <= 0) return;
     const toAdd = Array.from(files).slice(0, remaining);
@@ -34,7 +34,7 @@ const CreateProduct = () => {
       preview: URL.createObjectURL(file),
     }));
     setImages((prev) => [...prev, ...newImages]);
-  };
+  }, [images]);
 
   const handleFileChange = (e) => {
     addFiles(e.target.files);
@@ -47,7 +47,7 @@ const CreateProduct = () => {
       setIsDragging(false);
       if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
     },
-    [images],
+    [addFiles],
   );
 
   const handleDragOver = (e) => {

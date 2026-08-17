@@ -1,9 +1,8 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { useNavigate, Link } from "react-router";
+import { Link } from "react-router";
 
 const Nav = () => {
-  const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
   const cartItems = useSelector((state) => state.cart.items);
 

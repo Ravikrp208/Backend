@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useProduct } from "../hooks/useProduct";
 import { useParams } from "react-router";
 
@@ -58,7 +58,7 @@ const SellerProductDetails = () => {
   const { productId } = useParams();
   const { handleGetProductById, handleAddProductVariant } = useProduct();
 
-  async function fetchProductDetails() {
+  const fetchProductDetails = useCallback(async () => {
     setLoading(true);
     try {
       const data = await handleGetProductById(productId);
@@ -73,11 +73,11 @@ const SellerProductDetails = () => {
     } finally {
       setLoading(false);
     }
-  }
+  }, [productId, handleGetProductById]);
 
   useEffect(() => {
     fetchProductDetails();
-  }, [productId]);
+  }, [fetchProductDetails]);
 
   // Handlers for modifying existing variant stock natively
   const handleStockChange = (index, newStock) => {

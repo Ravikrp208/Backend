@@ -7,15 +7,19 @@ import {
   googleCallback,
   login,
   register,
+  getMe,
 } from "../controllers/auth.controller.js";
 import passport from "passport";
 import { config } from "../config/config.js";
+import { authenticateUser } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
 router.post("/register", validateRegisterUser, register);
 
 router.post("/login", validateLoginUser, login);
+
+router.get("/me", authenticateUser, getMe);
 
 // /api/auth/google
 router.get(
