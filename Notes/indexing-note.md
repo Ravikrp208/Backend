@@ -1,6 +1,5 @@
 # Indexing in MongoDB
 
-
 ---
 
 # 1 What is Indexing?
@@ -21,16 +20,16 @@ You have 10 million users.
 You run:
 
 ```js
-db.users.find({ email: "ankur@gmail.com" })
+db.users.find({ email: "ankur@gmail.com" });
 ```
 
 Without index:
 
-* MongoDB checks document 1
-* Then 2
-* Then 3
-* ...
-* Until 10,000,000
+- MongoDB checks document 1
+- Then 2
+- Then 3
+- ...
+- Until 10,000,000
 
 This is called:
 
@@ -48,19 +47,19 @@ MongoDB uses a **B+ Tree** data structure internally for indexes.
 
 ---
 
-##  What is a B+ Tree?
+## What is a B+ Tree?
 
 A B+ Tree is a self-balancing tree structure optimized for:
 
-* Disk-based storage
-* Range queries
-* Ordered data
+- Disk-based storage
+- Range queries
+- Ordered data
 
 Unlike binary trees:
 
-* All data pointers are stored in leaf nodes
-* Leaf nodes are connected (linked list style)
-* Internal nodes only store keys (not full data)
+- All data pointers are stored in leaf nodes
+- Leaf nodes are connected (linked list style)
+- Internal nodes only store keys (not full data)
 
 ---
 
@@ -86,7 +85,7 @@ Unlike binary trees:
 Suppose indexed field:
 
 ```js
-db.users.createIndex({ email: 1 })
+db.users.createIndex({ email: 1 });
 ```
 
 Internally:
@@ -118,7 +117,7 @@ That’s insane improvement.
 ### Single Field Index
 
 ```js
-db.users.createIndex({ email: 1 })
+db.users.createIndex({ email: 1 });
 ```
 
 `1` → ascending
@@ -129,7 +128,7 @@ db.users.createIndex({ email: 1 })
 ### Compound Index
 
 ```js
-db.users.createIndex({ username: 1, age: -1 })
+db.users.createIndex({ username: 1, age: -1 });
 ```
 
 Important rule:
@@ -141,7 +140,7 @@ Important rule:
 ### Unique Index
 
 ```js
-db.users.createIndex({ email: 1 }, { unique: true })
+db.users.createIndex({ email: 1 }, { unique: true });
 ```
 
 Prevents duplicate emails.
@@ -155,7 +154,7 @@ Prevents duplicate emails.
 ## Case 1: Without Index
 
 ```js
-db.users.find({ email: "test@gmail.com" })
+db.users.find({ email: "test@gmail.com" });
 ```
 
 Execution Plan:
@@ -166,9 +165,9 @@ COLLSCAN
 
 Meaning:
 
-* Check every document
-* Compare email
-* Return match
+- Check every document
+- Compare email
+- Return match
 
 Time Complexity: O(n)
 
@@ -179,7 +178,7 @@ If 5M records → slow
 ## Case 2: With Index
 
 ```js
-db.users.createIndex({ email: 1 })
+db.users.createIndex({ email: 1 });
 ```
 
 Now same query:
@@ -190,8 +189,8 @@ IXSCAN
 
 Meaning:
 
-* Search in B+ Tree
-* Jump directly to document pointer
+- Search in B+ Tree
+- Jump directly to document pointer
 
 Time Complexity: O(log n)
 
@@ -204,7 +203,7 @@ Huge difference at scale.
 Use:
 
 ```js
-db.users.find({ email: "test@gmail.com" }).explain("executionStats")
+db.users.find({ email: "test@gmail.com" }).explain("executionStats");
 ```
 
 Look for:
@@ -237,21 +236,21 @@ Your index is useless.
 
 ```js
 db.orders.find({
-  price: { $gte: 1000, $lte: 5000 }
-})
+  price: { $gte: 1000, $lte: 5000 },
+});
 ```
 
 If indexed:
 
 ```js
-db.orders.createIndex({ price: 1 })
+db.orders.createIndex({ price: 1 });
 ```
 
 Because B+ tree stores ordered keys:
 
-* It finds 1000
-* Then sequentially moves through linked leaf nodes
-* Stops at 5000
+- It finds 1000
+- Then sequentially moves through linked leaf nodes
+- Stops at 5000
 
 Efficient.
 
@@ -280,10 +279,10 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     unique: true,
-    index: true
+    index: true,
   },
   username: String,
-  age: Number
+  age: Number,
 });
 ```
 
@@ -301,10 +300,10 @@ Indexes are not free.
 
 They:
 
-* Consume RAM
-* Increase write cost
-* Slow down insert/update
-* Increase disk usage
+- Consume RAM
+- Increase write cost
+- Slow down insert/update
+- Increase disk usage
 
 Every insert must:
 
@@ -344,9 +343,9 @@ Why?
 
 Common queries:
 
-* Who follows user X? → index on `following`
-* Whom does X follow? → index on `follower`
-* Prevent duplicate follow → compound unique index
+- Who follows user X? → index on `following`
+- Whom does X follow? → index on `follower`
+- Prevent duplicate follow → compound unique index
 
 This makes it scalable.
 
@@ -368,15 +367,15 @@ Doesn't support range queries.
 
 B+ Tree allows:
 
-* Leaf-level sequential scan
-* Better disk optimization
-* More predictable IO pattern
+- Leaf-level sequential scan
+- Better disk optimization
+- More predictable IO pattern
 
 Databases like:
 
-* MySQL (InnoDB)
-* PostgreSQL
-* MongoDB
+- MySQL (InnoDB)
+- PostgreSQL
+- MongoDB
 
 All use B+ Tree for indexing.
 
@@ -401,11 +400,11 @@ Indexing becomes mandatory at scale.
 
 Indexing in MongoDB:
 
-* Implemented using B+ Tree
-* Reduces search from O(n) → O(log n)
-* Supports range queries efficiently
-* Improves read performance drastically
-* Slows down write performance slightly
+- Implemented using B+ Tree
+- Reduces search from O(n) → O(log n)
+- Supports range queries efficiently
+- Improves read performance drastically
+- Slows down write performance slightly
 
 Core understanding:
 
